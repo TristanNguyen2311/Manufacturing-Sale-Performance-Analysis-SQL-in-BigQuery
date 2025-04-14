@@ -3,7 +3,8 @@
 
 
 ---
-![96-967411_ecommerce-png-ecommerce-website-vector-png-clipart](https://github.com/user-attachments/assets/5441bb3d-3cba-4e6d-a6e9-23a00f56e7ae)
+![Brown-Jersey-Ultimo-5-640x427](https://github.com/user-attachments/assets/b560b5c5-7f8d-4bd3-bdea-28e6720e0c90)
+
 
 
 
@@ -42,7 +43,7 @@ This project queries and analyzes user interactions, shopping patterns, and prod
 ## 📂 Dataset Description 
 
 ### 📌 Data Source  
-- Source: Google Analytics Public Dataset
+- Source: A
   
 ### 📌 Data Dictionary
 ![Sql 1](https://github.com/user-attachments/assets/5eaf6db7-04df-4443-9397-5671c93dfd55)
