@@ -43,74 +43,103 @@ This project queries and analyzes user interactions, shopping patterns, and prod
 ## 📂 Dataset Description 
 
 ### 📌 Data Source  
-- Source: A
+- Source: Adventureworks2019
   
 ### 📌 Data Dictionary
-![Sql 1](https://github.com/user-attachments/assets/5eaf6db7-04df-4443-9397-5671c93dfd55)
+https://drive.google.com/file/d/1bwwsS3cRJYOg1cvNppc1K_8dQLELN16T/view?usp=sharing
 
 
 
 ## ⚒️ Main Process
 
 <details>
-  <summary> 1. Traffic & Engagement Analysis</summary>
-Measured total visits, page views, and transactions in Q1 2017 to identify key traffic trends and seasonal patterns.
+  <summary> 1. Subcategory Revenue Analysis </summary>
+ Calculate the quantity of items, sales value & order quantity by each Subcategory in the last 12 months. 
 
 ```sql
--- Calculate total visit, pageview, transaction for Jan, Feb, and March 2017 (order by month)
 SELECT 
-   format_date("%Y%m", parse_date("%Y%m%d", date)) as month
-  ,SUM(totals.visits) as visits
-  ,SUM(totals.pageviews) as pageviews
-  ,SUM(totals.transactions) as transactions
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`
-WHERE _table_suffix BETWEEN "0101" AND '0331'
-GROUP BY month
-ORDER BY month
+  FORMAT_DATE('%b %Y', s.ModifiedDate) as period
+  ,ps.Name
+  ,SUM(s.OrderQty) as qty_item
+  ,SUM(s.LineTotal) total_sales
+  ,COUNT(DISTINCT s.SalesOrderID) as order_cnt
+FROM `adventureworks2019.Sales.SalesOrderDetail` as s
+LEFT JOIN `adventureworks2019.Production.Product` as p
+  ON s.ProductID=p.ProductID
+LEFT JOIN `adventureworks2019.Production.ProductSubcategory` as ps
+  ON CAST(p.ProductSubcategoryID as INT) = ps.ProductSubcategoryID
+WHERE DATE(s.ModifiedDate) >= (SELECT DATE_SUB(DATE(MAX(ModifiedDate)), INTERVAL 12 MONTH) 
+                                    FROM `adventureworks2019.Sales.SalesOrderDetail`)
+GROUP BY period, ps.Name
+ORDER BY period DESC, ps.Name
 ```
 
 Query Result:
-| Month  | Visits | Pageviews | Transactions |
-|--------|--------|-----------|--------------|
-| 201701 | 64,694 | 257,708   | 713          |
-| 201702 | 62,192 | 233,373   | 733          |
-| 201703 | 69,931 | 259,522   | 993          |
+| period    |  Name               | qty_item       | total_sales   | order_cnt    |
+|-----------|---------------------|----------------|---------------|--------------|
+| Sep 2013 | Bike Racks          | 312            | 22,828.51     | 71           |
+| Sep 2013 | Bike Stands         | 26             | 4,134.00      | 26           |
+| Sep 2013 | Bottles and Cages   | 803            | 4,676.56      | 380          |
+| Sep 2013 | Bottom Brackets     | 60             | 3,118.14      | 19           |
+| Sep 2013 | Brakes              | 100            | 6,390.00      | 29           |
+
 
 </details>
 
 
 <details>
-  <summary> 2. Marketing Effectiveness</summary>
-Evaluated bounce rates per traffic sources in July 2017 to pinpoint ineffective channels and optimize landing pages.
-
+  <summary> 2. Subcategory Growth Analysis  S</summary>
+Calculate the % YoY growth rate by Subcategory & release the top 3 with the highest growth rate.
 ```sql
--- Bounce rate per traffic source in July 2017 (Bounce_rate = num_bounce/total_visit) (order by total_visit DESC)
-SELECT   
-  trafficSource.source
-  ,SUM(totals.visits) as totals_visits
-  ,SUM(totals.bounces) as total_no_of_bounces
-  ,ROUND(100*SUM(totals.bounces)/SUM(totals.visits),2) as bounce_rate
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*` 
-GROUP BY trafficSource.source
-ORDER BY  trafficSource.source
+WITH qty_by_year as(
+  SELECT 
+    FORMAT_DATE('%Y', s.ModifiedDate) as period
+    ,ps.Name as Name
+    ,SUM(s.OrderQty) qty_item
+  FROM `adventureworks2019.Sales.SalesOrderDetail` as s
+  LEFT JOIN `adventureworks2019.Production.Product` as p
+  ON s.ProductID=p.ProductID
+  LEFT JOIN `adventureworks2019.Production.ProductSubcategory` ps
+  ON CAST(p.ProductSubcategoryID as INT) = ps.ProductSubcategoryID
+  GROUP BY period, Name
+)
+
+,qty_by_prv_year as(
+  SELECT 
+    period
+    ,Name
+    ,qty_item 
+    ,LAG(qty_item) OVER(PARTITION BY Name ORDER BY period) as prv_qty
+  FROM qty_by_year
+  ORDER BY Name, period
+)
+
+,YoY_ranking as(
+  SELECT 
+  Name
+  ,qty_item 
+  ,prv_qty
+  ,ROUND((qty_item - prv_qty)/prv_qty,2) as qty_diff
+  ,DENSE_RANK() OVER(ORDER BY (qty_item - prv_qty)/prv_qty DESC) as rk
+  FROM qty_by_prv_year
+)
+
+SELECT 
+  Name
+  ,qty_item 
+  ,prv_qty
+  ,qty_diff
+FROM YoY_ranking
+WHERE rk <=3;
 ```
 
 Query Result:
 
-| Source | Total Visits | Total Bounces | Bounce Rate (%) |
-|--------|-------------|--------------|---------------|
-| google | 38,400 | 19,798 | 51.56% |
-| (direct) | 19,891 | 8,606 | 43.27% |
-| youtube.com | 6,351 | 4,238 | 66.73% |
-| analytics.google.com | 1,972 | 1,064 | 53.96% |
-| Partners | 1,788 | 936 | 52.35% |
-| m.facebook.com | 669 | 430 | 64.28% |
-| google.com | 368 | 183 | 49.73% |
-| dfa | 302 | 124 | 41.06% |
-| sites.google.com | 230 | 97 | 42.17% |
-| facebook.com | 191 | 102 | 53.40% |
-| reddit.com | 189 | 54 | 28.57% |
-| ... | ... | ... | ... |
+| Name            | qty_item                 | prv_qty                   | qty_diff                   |
+|-----------------|--------------------------|---------------------------|----------------------------|
+| Road Frames     | 5564                     | 1137                      | 3.89                       |
+| Mountain Frames | 3168                     | 510                       | 5.21                       |
+| Socks           | 2724                     | 523                       | 4.21                       |
 
 </details>
 
