@@ -26,11 +26,11 @@ Date: 2024-10-19
 
 ### Objective:
 ### 📖 What is this project about? What Business Question will it solve?
-This project queries and analyzes user interactions, shopping patterns, and product performance to:   
-✔️ Identify customer behavior  
-✔️ Enhance user experience  
-✔️ Improve conversion rates  
-✔️ Optimize marketing strategies
+This project queries and analyzes :   
+✔️
+✔️ 
+✔️ 
+✔️ 
   
 ### 👤 Who is this project for?  
 ✔️ Data Analysts & Business Analysts  
@@ -54,7 +54,7 @@ https://drive.google.com/file/d/1bwwsS3cRJYOg1cvNppc1K_8dQLELN16T/view?usp=shari
 
 <details>
   <summary> 1. Subcategory Revenue Analysis </summary>
- Calculate the quantity of items, sales value & order quantity by each Subcategory in the last 12 months. 
+ Calculate the quantity of items, sales value and order quantity by each Subcategory in the last 12 months.   
 
 ```sql
 SELECT 
@@ -89,7 +89,8 @@ Query Result:
 
 <details>
   <summary> 2. Subcategory Growth Analysis  S</summary>
-Calculate the % YoY growth rate by Subcategory & release the top 3 with the highest growth rate.
+Calculate the % YoY growth rate by Subcategory and release the top 3 with the highest growth rate.   
+
 ```sql
 WITH qty_by_year as(
   SELECT 
@@ -130,7 +131,7 @@ SELECT
   ,prv_qty
   ,qty_diff
 FROM YoY_ranking
-WHERE rk <=3;
+WHERE rk <=3
 ```
 
 Query Result:
@@ -145,258 +146,264 @@ Query Result:
 
 
 <details>
-  <summary> 3. Revenue Breakdown</summary>
- Analyzed revenue by traffic source weekly and monthly in June 2017 to assess the best-performing acquisition channels.
+  <summary> 3. </summary>
+Ranking Top 3 TeritoryID with biggest Order quantity of every year.  
 
 ```sql
--- Revenue by traffic source by week, by month in June 2017
-WITH week_revenue as(
+WITH  order_count as(
   SELECT 
-    'Week'as time_type
-    ,FORMAT_DATE('%Y%W',PARSE_DATE('%Y%m%d', date)) as time
-    ,trafficSource.source 
-    ,SUM(productRevenue)/1000000.0 as revenue
-  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201706*`,
-  UNNEST (hits) hits,
-  UNNEST (hits.product) product
-  WHERE productRevenue is not null
-  GROUP BY time, trafficSource.source
-  ORDER BY time, trafficSource.source
+    EXTRACT(YEAR FROM detail.ModifiedDate) as yr
+    ,header.TerritoryID
+    ,sum(detail.OrderQty) as order_cnt
+  FROM `adventureworks2019.Sales.SalesOrderDetail` detail
+  LEFT JOIN `adventureworks2019.Sales.SalesOrderHeader` header 
+    ON detail.SalesOrderID = header.SalesOrderID
+  GROUP BY yr, header.TerritoryID
+) 
+
+,ranking as(
+  SELECT
+    yr
+    ,TerritoryID
+    ,order_cnt
+    ,DENSE_RANK() OVER(PARTITION BY yr ORDER BY order_cnt DESC) as rk
+  FROM order_count
+  ORDER BY yr DESC
 )
 
-,month_revenue as(
+SELECT 
+  yr
+  ,TerritoryID
+  ,order_cnt
+  ,rk
+FROM ranking
+WHERE rk <=3
+```
+
+Query Result:
+
+
+
+</details>
+
+
+<details>
+  <summary> 4. </summary>
+Calculate total discount cost belongs to Seasonal Discount for each Subcategory.  
+  
+```sql
+SELECT 
+  Year
+  ,Name
+  ,SUM(disc_cost) as Total_cost
+FROM
+  (
   SELECT 
-    'Month'as time_type
-    ,FORMAT_DATE('%Y%m',PARSE_DATE('%Y%m%d', date)) as time
-    ,trafficSource.source
-    ,SUM(productRevenue)/1000000.0 as revenue
-  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201706*`,
-  UNNEST (hits) hits,
-  UNNEST (hits.product) product
-  WHERE productRevenue is not null
-  GROUP BY time, trafficSource.source
-  ORDER BY time, trafficSource.source
-)
-
-SELECT *
-FROM week_revenue
-UNION ALL
-SELECT *
-FROM month_revenue
-ORDER BY source, revenue
+      FORMAT_DATE('%Y', s.ModifiedDate) as Year
+      , ps.Name
+      , so.DiscountPct
+      , s.OrderQty * so.DiscountPct * s.UnitPrice as disc_cost 
+      FROM `adventureworks2019.Sales.SalesOrderDetail` as s
+      LEFT JOIN `adventureworks2019.Production.Product` as p ON s.ProductID = p.ProductID
+      LEFT JOIN `adventureworks2019.Production.ProductSubcategory` ps ON CAST(p.ProductSubcategoryID as int) = ps.ProductSubcategoryID
+      LEFT JOIN `adventureworks2019.Sales.SpecialOffer` so ON s.SpecialOfferID = so.SpecialOfferID
+      WHERE lower(so.Type) like '%seasonal discount%' 
+  )
+  GROUP BY Year, Name
 ```
 
 Query Result:
 
-| Time Type| Time | Source             | Revenue ($) |
-| ------ | ------ | ------------------ | ----------- |
-| Week   | 201722 | (direct)           | 6888.90     |
-| Week   | 201726 | (direct)           | 14914.81    |
-| Week   | 201723 | (direct)           | 17325.68    |
-| Week   | 201725 | (direct)           | 27295.32    |
-| Week   | 201724 | (direct)           | 30908.91    |
-| Month  | 201706 | (direct)           | 97333.62    |
-| Month  | 201706 | bing               | 13.98       |
-| Week   | 201724 | bing               | 13.98       |
-| Month  | 201706 | chat.google.com    | 74.03       |
-| Week   | 201723 | chat.google.com    | 74.03       |
-| Week   | 201724 | dealspotr.com      | 72.95       |
-| Month  | 201706 | dealspotr.com      | 72.95       |
+
 
 </details>
 
 
+
 <details>
-  <summary> 4. Traffic & Engagement Analysis</summary>
-Compared the browsing patterns of purchasers and non-purchasers in June & July 2017 to identify key engagement drivers.
+  <summary> 5. </summary>
+Retention rate of Customer in 2014 with status of Successfully Shipped.     
   
 ```sql
--- Average number of pageviews by purchaser type (purchasers vs non-purchasers) in June, July 2017.
-WITH avg_pageview_purchaser as(
+WITH info as(
+  SELECT 
+    EXTRACT(MONTH FROM ModifiedDate) as month_no
+    ,EXTRACT(YEAR FROM ModifiedDate) as year_no
+    ,CustomerID
+  FROM `adventureworks2019.Sales.SalesOrderHeader`
+  WHERE status = 5 AND FORMAT_DATE("%Y", ModifiedDate) = '2014'
+  GROUP BY 1, 2, 3
+  ORDER BY 3,1
+)
+
+,rn as(           ---đánh số thứ tự các tháng họ mua hàng
+  SELECT
+   month_no
+   ,CustomerID
+   ,ROW_NUMBER() OVER(PARTITION BY CustomerID ORDER BY month_no) as row_num
+  FROM info
+)
+
+,first_month as(           ---lấy ra tháng đầu tiên của từng khách
+  SELECT 
+    month_no as month_join
+    ,customerID
+  FROM rn
+  WHERE row_num = 1
+)
+
+,month_gap as(
+  SELECT 
+    a.month_no as month_order
+    ,a.CustomerID
+    ,b.month_join
+    ,CONCAT("M","-", a.month_no - b.month_join) as month_diff
+  FROM info a
+  LEFT JOIN first_month b
+  ON a.CustomerID = b.CustomerID
+  ORDER BY 2,1
+)
+
+SELECT 
+  month_join
+  ,month_diff
+  ,COUNT(DISTINCT CustomerID) customer_cnt
+FROM month_gap
+GROUP BY 1, 2
+ORDER BY 1, 2
+```
+Query Result:
+
+
+
+
+</details>
+
+<details>
+  <summary>6. </summary>
+Trend of Stock level & MoM diff % by all product in 2011.  
+  
+```sql
+WITH stock_qty_2011 as(
+  SELECT 
+    p.Name
+      ,FORMAT_DATE('%m', w.ModifiedDate) as mth
+      ,FORMAT_DATE('%Y', w.ModifiedDate) as yr
+      ,SUM(w.StockedQty) stock_qty
+  FROM `adventureworks2019.Production.Product` as p
+  LEFT JOIN `adventureworks2019.Production.WorkOrder` as w
+    ON p.ProductID = w.ProductID
+  WHERE FORMAT_DATE('%Y', w.ModifiedDate) = '2011'
+  GROUP BY 1,2,3
+  ORDER BY 1,2
+)
+
+,stock_qty_prv_mth as(
+  SELECT
+    Name 
+    ,mth 
+    ,yr
+    ,stock_qty 
+    ,LAG(stock_qty) OVER(PARTITION BY Name ORDER BY mth) as stock_prv 
+  FROM stock_qty_2011
+  ORDER BY 1,2
+)
+
+SELECT 
+  Name 
+  ,mth 
+  ,yr 
+  ,stock_qty
+  ,stock_prv
+  ,CASE WHEN stock_prv != 0 THEN ROUND(100 * (stock_qty - stock_prv) / stock_prv, 1)
+   ELSE 0 END AS diff
+FROM stock_qty_prv_mth
+ORDER BY 1,2 DESC
+```
+Query Result:
+
+
+
+</details>
+
+
+
+<details>
+  <summary> 7. </summary>
+Calc ratio of Stock / Sales in 2011 by product name, by month.
+  
+```sql
+WITH sale_num as(
   SELECT  
-    FORMAT_DATE('%Y%m',PARSE_DATE('%Y%m%d', date)) as month
-    ,ROUND(SUM(totals.pageviews)/COUNT(DISTINCT fullVisitorId),2) as avg_pageviews_purchase
-  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`,
-  UNNEST (hits) hits,
-  UNNEST (hits.product) product
-  WHERE _table_suffix BETWEEN "0601" AND '0731'
-    AND totals.transactions >=1
-    AND productRevenue is not null
-  GROUP BY month
-  ORDER BY month
+    EXTRACT(MONTH FROM s.ModifiedDate) mth
+    ,EXTRACT(YEAR FROM s.ModifiedDate) yr
+    ,s.ProductID as ProductID
+    ,p.Name Name
+    ,SUM(s.OrderQty) sales
+  FROM `adventureworks2019.Sales.SalesOrderDetail` s
+  LEFT JOIN `adventureworks2019.Production.Product` p
+    ON s.ProductID=p.ProductID
+  WHERE EXTRACT(YEAR FROM s.ModifiedDate) = 2011
+  GROUP BY 1, 2 ,3, 4
 )
 
-,avg_pageviews_non_purchaser as(
-  SELECT  
-    FORMAT_DATE('%Y%m',PARSE_DATE('%Y%m%d', date)) as month
-    ,ROUND(SUM(totals.pageviews)/COUNT(DISTINCT fullVisitorId),2) as avg_pageviews_non_purchase
-  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`,
-  UNNEST (hits) hits,
-  UNNEST (hits.product) product
-  WHERE _table_suffix BETWEEN "0601" AND '0731'
-    AND totals.transactions is null
-    AND productRevenue is null
-  GROUP BY month
-  ORDER BY month
+, stock_num as(
+  SELECT 
+    EXTRACT(MONTH FROM ModifiedDate) mth
+    ,EXTRACT(YEAR FROM ModifiedDate) yr
+    ,ProductID
+    ,SUM(StockedQty) stock_cnt
+  FROM `adventureworks2019.Production.WorkOrder` 
+  WHERE EXTRACT(YEAR FROM ModifiedDate) = 2011
+  GROUP BY 1, 2, 3
 )
 
 SELECT 
-  pur.month
-  ,pur.avg_pageviews_purchase
-  ,non_pur.avg_pageviews_non_purchase
-FROM  avg_pageview_purchaser as pur
-FULL JOIN avg_pageviews_non_purchaser as non_pur
-ON pur.month = non_pur.month
+  sa.mth
+  ,sa.yr
+  ,sa.ProductID
+  ,sa.Name
+  ,sa.sales
+  ,st.stock_cnt as stock
+  ,ROUND(COALESCE(st.stock_cnt,0)/sa.sales,1) ratio
+FROM sale_num as sa
+LEFT JOIN stock_num as st
+  ON sa.ProductID = st.ProductID
+  AND sa.mth= st.mth
+  AND sa.yr= st.yr
+ORDER BY 1 DESC,7 DESC
 ```
-
 Query Result:
 
-| Month  | Avg Pageviews (Purchase) | Avg Pageviews (Non-Purchase) |
-|--------|-------------------------:|-----------------------------:|
-| 201706 | 94.02                    | 316.87                      |
-| 201707 | 124.24                   | 334.06                      |
+
 
 </details>
 
 
 
-<details>
-  <summary> 5. Customer Loyalty & Spending Patterns Analysis</summary>
-Measured transaction frequency per user  in July 2017 to gauge purchase consistency and spending habits.
-  
-```sql
--- Average number of transactions per user that made a purchase in July 2017
+
+Number of order and value at Pending status in 2014
 SELECT 
-  FORMAT_DATE('%Y%m',PARSE_DATE('%Y%m%d', date)) as month
-  ,ROUND(SUM(totals.transactions)/COUNT(DISTINCT fullVisitorId),2) as Avg_total_transactions_per_user
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
-UNNEST (hits) hits,
-UNNEST (hits.product) product
-WHERE totals.transactions >=1
-  AND productRevenue is not null
-GROUP BY month
-ORDER BY month
-```
-Query Result:
-
-| Month  | Avg Total Transactions per User |
-|--------|--------------------------------:|
-| 201707 | 4.16                            |
+  EXTRACT(YEAR FROM ModifiedDate) yr
+  ,Status
+  ,COUNT(DISTINCT PurchaseOrderID) order_cnt 
+  ,SUM(TotalDue) value
+FROM `adventureworks2019.Purchasing.PurchaseOrderHeader`
+WHERE EXTRACT(YEAR FROM ModifiedDate) = 2014
+AND Status = 1
+GROUP BY 1, 2
 
 
-```sql
--- Average amount of money spent per session. Only include purchaser data in July 2017
-SELECT 
-  FORMAT_DATE('%Y%m',PARSE_DATE('%Y%m%d', date)) as month
-  ,ROUND(SUM(productRevenue)/(SUM(totals.visits)*1000000),2) as avg_spend_per_session
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
-UNNEST (hits) hits,
-UNNEST (hits.product) product
-WHERE totals.transactions >=1
-  AND productRevenue is not null
-GROUP BY month
-```
-Query Result:
-
-| Month  | Avg Revenue Per Visit (USD) |
-|--------|----------------------------:|
-| 201707 | 43.86                       |
-
-
-</details>
-
-
-<details>
-  <summary>6. Product Affinity & Cross-Selling</summary>
-Identified frequently co-purchased products with YouTube Men's Vintage Henley to uncover bundling and recommendation opportunities.
-  
-```sql
--- Other products purchased by customers who purchased product "YouTube Men's Vintage Henley" in July 2017.
-WITH buyer_list as(
-    SELECT
-        DISTINCT fullVisitorId  
-    FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`
-    , UNNEST(hits) as hits
-    , UNNEST(hits.product) as product
-    WHERE product.v2ProductName = "YouTube Men's Vintage Henley"
-    AND totals.transactions>=1
-    AND product.productRevenue is not null
-)
-
-SELECT
-  product.v2ProductName as other_purchased_products,
-  SUM(product.productQuantity) as quantity
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`
-, UNNEST(hits) as hits
-, UNNEST(hits.product) as product
-INNER JOIN buyer_list USING(fullVisitorId)
-WHERE product.v2ProductName != "YouTube Men's Vintage Henley"
- AND product.productRevenue is not null
-GROUP BY other_purchased_products
-ORDER BY quantity DESC
-```
-Query Result:
-
-| Product Name                                      | Quantity |
-|--------------------------------------------------|---------:|
-| Google Sunglasses                                | 20       |
-| Google Women's Vintage Hero Tee Black           | 7        |
-| SPF-15 Slim & Slender Lip Balm                  | 6        |
-| Google Women's Short Sleeve Hero Tee Red Heather | 4        |
-| YouTube Men's Fleece Hoodie Black               | 3        |
-| Google Men's Short Sleeve Badge Tee Charcoal    | 3        |
-
-
-</details>
-
-
-<details>
-  <summary> 7. Conversion Funnel Optimization</summary>
-Built a cohort analysis to track product view-to-purchase conversion rates in Q1 2017, revealing key drop-off points in the buying journey.
-
-```sql
--- Calculate cohort map from product view to addtocart to purchase in Jan, Feb and March 2017. 
-WITH product_data as(
-SELECT
-  format_date('%Y%m', parse_date('%Y%m%d',date)) as month
-  ,count(CASE WHEN eCommerceAction.action_type = '2' THEN product.v2ProductName END) as num_product_view
-  ,count(CASE WHEN eCommerceAction.action_type = '3' THEN product.v2ProductName END) as num_add_to_cart
-  ,count(CASE WHEN eCommerceAction.action_type = '6' and product.productRevenue is not null THEN product.v2ProductName END) as num_purchase
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
-,UNNEST(hits) as hits
-,UNNEST (hits.product) as product
-WHERE _table_suffix BETWEEN '20170101' AND '20170331'
-  AND eCommerceAction.action_type in ('2','3','6')
-GROUP BY month
-ORDER BY  month
-)
-
-SELECT
-    *,
-    ROUND(num_add_to_cart/num_product_view * 100, 2) as add_to_cart_rate,
-    ROUND(num_purchase/num_product_view * 100, 2) as purchase_rate
-FROM product_data
-```
-Query Result:
-
-| Month  | Product Views | Add to Cart | Purchases | Add-to-Cart Rate (%) | Purchase Rate (%) |
-|--------|--------------|-------------|-----------|----------------------|------------------:|
-| 201701 | 25,787       | 7,342       | 2,143     | 28.47                | 8.31             |
-| 201702 | 21,489       | 7,360       | 2,060     | 34.25                | 9.59             |
-| 201703 | 23,549       | 8,782       | 2,977     | 37.29                | 12.64            |
-
-
-</details>
 
 ## 🔎 Final Conclusion & Recommendations  
 
 👉🏻 Based on the insights and findings above, we would recommend the stakeholder team to consider the following:    
-✔️ Visits are stable in Q1 2017, while transactions rose and improved the conversion rate from 1.10% to 1.42%.   
-✔️ Google has a high number of visits but also a very high bounce rate, while YouTube had the worst engagement (66.73% bounce rate). Reddit had the lowest (28.57%), showing better content relevance.   
-✔️ Although the Average Pageviews of Purchase increased by 32% (from 94 to 124), the Average Pageviews of Non-Purchase remain high (from 94 to 124), indicating that customers are struggling to find suitable products and      make purchasing decisions.  
-✔️ Add-to-cart rate (28.47% → 37.29%) and purchase rate (8.31% → 12.64%) steadily improved in Q1 2017, signaling better conversion efficiency.   
+✔️   
+✔️  
+✔️ 
+
 
 📌 Key Takeaways:  
-✔️ Conduct surveys or phone calls to understand customers better to improve the landing page.  
-✔️ Simplify navigation and optimize the payment process to increase the number of buyers.  
-✔️ Create attractive banners and promotional vouchers for products, coupled with solutions for cart abandonment to increase add-to-cart and purchase rates.  
+✔️  
+✔️ 
+✔️ .  
