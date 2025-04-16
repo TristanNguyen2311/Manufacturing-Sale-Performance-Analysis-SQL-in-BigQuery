@@ -26,12 +26,12 @@ Date: 2024-10-19
 
 ### Objective:
 ### 📖 What is this project about? What Business Question will it solve?
-This project queries and analyzes :   
-✔️
-✔️ 
-✔️ 
-✔️ 
-  
+This project queries and analyzes order quantity, stock quantity, and sale value to:     
+✔️ Identify customer behavior   
+✔️ Enhance product performance   
+✔️ Improve stock rates  
+   
+   
 ### 👤 Who is this project for?  
 ✔️ Data Analysts & Business Analysts  
 ✔️ Decision Makers & Stakeholders  
@@ -54,7 +54,7 @@ https://drive.google.com/file/d/1bwwsS3cRJYOg1cvNppc1K_8dQLELN16T/view?usp=shari
 
 <details>
   <summary> 1. Subcategory Revenue Analysis </summary>
- Calculate the quantity of items, sales value and order quantity by each Subcategory in the last 12 months.   
+ Calculate the quantity of items, sales value, and order quantity by each Subcategory in the last 12 months.   
 
 ```sql
 SELECT 
@@ -88,7 +88,7 @@ Query Result:
 
 
 <details>
-  <summary> 2. Subcategory Growth Analysis  S</summary>
+  <summary> 2. Subcategory Growth Analysis </summary>
 Calculate the % YoY growth rate by Subcategory and release the top 3 with the highest growth rate.   
 
 ```sql
@@ -146,8 +146,8 @@ Query Result:
 
 
 <details>
-  <summary> 3. </summary>
-Ranking Top 3 TeritoryID with biggest Order quantity of every year.  
+  <summary> 3. Sale Territory Analysis </summary>
+Ranking the top 3 TerritoryID with the biggest order quantity every year.  
 
 ```sql
 WITH  order_count as(
@@ -155,8 +155,8 @@ WITH  order_count as(
     EXTRACT(YEAR FROM detail.ModifiedDate) as yr
     ,header.TerritoryID
     ,sum(detail.OrderQty) as order_cnt
-  FROM `adventureworks2019.Sales.SalesOrderDetail` detail
-  LEFT JOIN `adventureworks2019.Sales.SalesOrderHeader` header 
+  FROM `adventureworks2019.Sales.SalesOrderDetail` as detail
+  LEFT JOIN `adventureworks2019.Sales.SalesOrderHeader` as header 
     ON detail.SalesOrderID = header.SalesOrderID
   GROUP BY yr, header.TerritoryID
 ) 
@@ -182,14 +182,25 @@ WHERE rk <=3
 
 Query Result:
 
+| yr   | Territory ID | order_cnt   | rk |
+|------|--------------|-------------|------|
+| 2014 | 4            | 11,632      | 1    |
+| 2014 | 6            | 9,711       | 2    |
+| 2014 | 1            | 8,823       | 3    |
+| 2013 | 4            | 26,682      | 1    |
+| 2013 | 6            | 22,553      | 2    |
+| 2013 | 1            | 17,452      | 3    |
+| 2012 | 4            | 17,553      | 1    |
+| 2012 | 6            | 14,412      | 2    |
+| 2012 | 1            | 8,537       | 3    |
 
 
 </details>
 
 
 <details>
-  <summary> 4. </summary>
-Calculate total discount cost belongs to Seasonal Discount for each Subcategory.  
+  <summary> 4. Seasonal Discount Analysis  </summary>
+Calculate the total discount cost of the Seasonal Discount for each Subcategory.  
   
 ```sql
 SELECT 
@@ -213,7 +224,10 @@ FROM
 ```
 
 Query Result:
-
+| Year | Product | Total_cost |
+|------|---------|------------|
+| 2012 | Helmets | 827.65     |
+| 2013 | Helmets | 1606.04    |
 
 
 </details>
@@ -221,8 +235,8 @@ Query Result:
 
 
 <details>
-  <summary> 5. </summary>
-Retention rate of Customer in 2014 with status of Successfully Shipped.     
+  <summary> 5. Retention Rate Analysis </summary>
+Retention rate of customers in 2014 with status of Successfully Shipped.     
   
 ```sql
 WITH info as(
@@ -274,14 +288,25 @@ ORDER BY 1, 2
 ```
 Query Result:
 
-
+| month_join   | month_diff       | customer_cnt   |
+|--------------|------------------|----------------|
+| 1            | M-0              | 2076           |
+| 1            | M-1              | 78             |
+| 1            | M-2              | 89             |
+| 1            | M-3              | 252            |
+| 1            | M-4              | 96             |
+| 1            | M-5              | 61             |
+| 1            | M-6              | 18             |
+| 2            | M-0              | 1805           |
+| 2            | M-1              | 51             |
+| 2            | M-2              | 61             |
 
 
 </details>
 
 <details>
-  <summary>6. </summary>
-Trend of Stock level & MoM diff % by all product in 2011.  
+  <summary>6. Monthly Stock Analysis </summary>
+Trend of Stock level & MoM diff %  by all products in 2011.  
   
 ```sql
 WITH stock_qty_2011 as(
@@ -319,9 +344,21 @@ SELECT
    ELSE 0 END AS diff
 FROM stock_qty_prv_mth
 ORDER BY 1,2 DESC
+
 ```
 Query Result:
-
+| Name             | mth   | y  r | stock_qty| stock_prv         | diff     |
+|------------------|-------|------|----------|-------------------|----------|
+| BB Ball Bearing  | 12    | 2011 | 8475     | 14544             | -41.7    |
+| BB Ball Bearing  | 11    | 2011 | 14544    | 19175             | -24.2    |
+| BB Ball Bearing  | 10    | 2011 | 19175    | 8845              | 116.8    |
+| BB Ball Bearing  | 09    | 2011 | 8845     | 9666              | -8.5     |
+| BB Ball Bearing  | 08    | 2011 | 9666     | 12837             | -24.7    |
+| BB Ball Bearing  | 07    | 2011 | 12837    | 5259              | 144.1    |
+| BB Ball Bearing  | 06    | 2011 | 5259     | null              | 0.0      |
+| Blade            | 12    | 2011 | 1842     | 3598              | -48.8    |
+| Blade            | 11    | 2011 | 3598     | 4670              | -23.0    |
+| Blade            | 10    | 2011 | 4670     | 2122              | 120.1    |
 
 
 </details>
@@ -329,60 +366,66 @@ Query Result:
 
 
 <details>
-  <summary> 7. </summary>
-Calc ratio of Stock / Sales in 2011 by product name, by month.
+  <summary> 7. Product Stock Ratio Analysis  </summary>
+Calculate the ratio of Stock / Sales in 2011 by product name, by month.
   
 ```sql
-WITH sale_num as(
-  SELECT  
-    EXTRACT(MONTH FROM s.ModifiedDate) mth
-    ,EXTRACT(YEAR FROM s.ModifiedDate) yr
-    ,s.ProductID as ProductID
-    ,p.Name Name
-    ,SUM(s.OrderQty) sales
-  FROM `adventureworks2019.Sales.SalesOrderDetail` s
-  LEFT JOIN `adventureworks2019.Production.Product` p
-    ON s.ProductID=p.ProductID
-  WHERE EXTRACT(YEAR FROM s.ModifiedDate) = 2011
-  GROUP BY 1, 2 ,3, 4
-)
+WITH
+  sale_info as (
+    SELECT 
+      EXTRACT(MONTH FROM a.ModifiedDate) as mth,
+      EXTRACT(YEAR FROM a.ModifiedDate) as yr,
+      a.ProductId,
+      b.Name,
+      SUM(a.OrderQty) as sales
+    FROM `adventureworks2019.Sales.SalesOrderDetail` as a
+    LEFT JOIN `adventureworks2019.Production.Product` as b
+      ON a.ProductID = b.ProductID
+    WHERE FORMAT_TIMESTAMP("%Y", a.ModifiedDate) = '2011'
+    GROUP BY 1, 2, 3, 4
+  )
 
-, stock_num as(
-  SELECT 
-    EXTRACT(MONTH FROM ModifiedDate) mth
-    ,EXTRACT(YEAR FROM ModifiedDate) yr
-    ,ProductID
-    ,SUM(StockedQty) stock_cnt
-  FROM `adventureworks2019.Production.WorkOrder` 
-  WHERE EXTRACT(YEAR FROM ModifiedDate) = 2011
-  GROUP BY 1, 2, 3
-)
+  ,stock_info as (
+    SELECT
+      EXTRACT(MONTH FROM ModifiedDate) as mth,
+      EXTRACT(YEAR FROM ModifiedDate) as yr,
+      ProductId,
+      SUM(StockedQty) as stock_cnt
+    FROM `adventureworks2019.Production.WorkOrder`
+    WHERE FORMAT_TIMESTAMP("%Y", ModifiedDate) = '2011'
+    GROUP BY 1, 2, 3
+  )
 
-SELECT 
-  sa.mth
-  ,sa.yr
-  ,sa.ProductID
-  ,sa.Name
-  ,sa.sales
-  ,st.stock_cnt as stock
-  ,ROUND(COALESCE(st.stock_cnt,0)/sa.sales,1) ratio
-FROM sale_num as sa
-LEFT JOIN stock_num as st
-  ON sa.ProductID = st.ProductID
-  AND sa.mth= st.mth
-  AND sa.yr= st.yr
-ORDER BY 1 DESC,7 DESC
+SELECT
+  a.*,
+  b.stock_cnt as stock,  
+  ROUND(COALESCE(b.stock_cnt, 0) / sales, 2) as ratio
+FROM sale_info as a
+FULL JOIN stock_info as b
+  ON a.ProductId = b.ProductId
+  AND a.mth = b.mth
+  AND a.yr = b.yr
+ORDER BY 1 DESC, 7 DESC
 ```
 Query Result:
 
 
+| mth   | yr   | ProductId       | Name                         | sales | stock | ratio  |
+|-------|------|------------|-----------------------------------|-------|-------|--------|
+| 12    | 2011 | 745        | HL Mountain Frame - Black, 48     | 1     | 27    | 27.00  |
+| 12    | 2011 | 743        | HL Mountain Frame - Black, 42     | 1     | 26    | 26.00  |
+| 12    | 2011 | 748        | HL Mountain Frame - Silver, 38    | 2     | 32    | 16.00  |
+| 12    | 2011 | 722        | LL Road Frame - Black, 58         | 4     | 47    | 11.75  |
+| 12    | 2011 | 747        | HL Mountain Frame - Black, 38     | 3     | 31    | 10.33  |
 
 </details>
 
 
+<details>
+  <summary> 8. Pending Order Analysis </summary>
+Number of orders and value at Pending status in 2014.
 
-
-Number of order and value at Pending status in 2014
+```sql  
 SELECT 
   EXTRACT(YEAR FROM ModifiedDate) yr
   ,Status
@@ -392,18 +435,24 @@ FROM `adventureworks2019.Purchasing.PurchaseOrderHeader`
 WHERE EXTRACT(YEAR FROM ModifiedDate) = 2014
 AND Status = 1
 GROUP BY 1, 2
+```
+Query Result:
+| yr   | Status       | order_cnt   | value              |
+|------|--------------|-------------|--------------------|
+| 2014 | 1            | 224         | 3,873,579.012      |
 
+</details>
 
 
 ## 🔎 Final Conclusion & Recommendations  
 
 👉🏻 Based on the insights and findings above, we would recommend the stakeholder team to consider the following:    
-✔️   
+✔️ Southwest had the highest number of orders from 2011 to 2014 but experienced a sharp decline in order quantity in 2014 (26,682 -> 11,632). 
 ✔️  
 ✔️ 
 
 
 📌 Key Takeaways:  
 ✔️  
-✔️ 
+✔️   
 ✔️ .  
