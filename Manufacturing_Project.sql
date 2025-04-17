@@ -91,6 +91,7 @@ FROM ranking
 WHERE rk <=3;
 
 --query4
+
 SELECT Year
   ,Name
   ,SUM(disc_cost) as Total_cost
