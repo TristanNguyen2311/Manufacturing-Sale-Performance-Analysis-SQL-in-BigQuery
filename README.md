@@ -306,7 +306,7 @@ Query Result:
 
 <details>
   <summary>6. Monthly Stock Analysis </summary>
-Trend of Stock level & MoM diff %  by all products in 2011.  
+Trend of Stock level and MoM diff %  by all products in 2011.  
   
 ```sql
 WITH stock_qty_2011 as(
