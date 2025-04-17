@@ -43,7 +43,7 @@ This project queries and analyzes order quantity, stock quantity, and sale value
 ## 📂 Dataset Description 
 
 ### 📌 Data Source  
-- Source: Adventureworks2019
+- Source: AdventureWorks is a sample of Dataedo documentation from the Microsoft SQL Server sample database.
   
 ### 📌 Data Dictionary
 https://drive.google.com/file/d/1bwwsS3cRJYOg1cvNppc1K_8dQLELN16T/view?usp=sharing
