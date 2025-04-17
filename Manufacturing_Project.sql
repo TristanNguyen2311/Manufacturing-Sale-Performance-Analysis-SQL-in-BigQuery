@@ -1,5 +1,4 @@
 --query1
-
 SELECT 
   FORMAT_DATE('%b %Y', s.ModifiedDate) as period
   ,ps.Name
@@ -17,7 +16,6 @@ GROUP BY period, ps.Name
 ORDER BY period DESC, ps.Name;
 
 --query2
-
 WITH qty_by_year as(
   SELECT 
     FORMAT_DATE('%Y', s.ModifiedDate) as period
@@ -60,7 +58,6 @@ FROM YoY_ranking
 WHERE rk <=3;
 
 --query3
-
 WITH  order_count as(
   SELECT 
     EXTRACT(YEAR FROM detail.ModifiedDate) as yr
@@ -91,7 +88,6 @@ FROM ranking
 WHERE rk <=3;
 
 --query4
-
 SELECT Year
   ,Name
   ,SUM(disc_cost) as Total_cost
@@ -111,7 +107,6 @@ FROM
   GROUP BY Year, Name;
 
 --query5
-
 WITH info as(
   SELECT 
     EXTRACT(MONTH FROM ModifiedDate) as month_no
@@ -160,7 +155,6 @@ GROUP BY 1, 2
 ORDER BY 1, 2;
 
 --query6
-
 WITH stock_qty_2011 as(
   SELECT 
     p.Name
@@ -198,7 +192,6 @@ FROM stock_qty_prv_mth
 ORDER BY 1,2 DESC;
 
 --query7
-
 WITH sale_num as(
   SELECT  
     EXTRACT(MONTH FROM s.ModifiedDate) mth
@@ -240,7 +233,6 @@ LEFT JOIN stock_num as st
 ORDER BY 1 DESC,7 DESC;
 
 --query8
-
 SELECT 
   EXTRACT(YEAR FROM ModifiedDate) yr
   ,Status
