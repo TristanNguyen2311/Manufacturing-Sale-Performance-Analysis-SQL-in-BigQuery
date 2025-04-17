@@ -367,7 +367,7 @@ Query Result:
 
 <details>
   <summary> 7. Product Stock Ratio Analysis  </summary>
-Calculate the ratio of Stock / Sales in 2011 by product name, by month.
+Calculate the ratio of Stock / Sales in 2011 by product name, and by month.
   
 ```sql
 WITH
@@ -447,12 +447,13 @@ Query Result:
 ## 🔎 Final Conclusion & Recommendations  
 
 👉🏻 Based on the insights and findings above, we would recommend the stakeholder team to consider the following:    
-✔️ Southwest had the highest number of orders from 2011 to 2014 but experienced a sharp decline in order quantity in 2014 (26,682 -> 11,632). 
-✔️  
-✔️ 
 
-
+✔️ Mountain Bikes had the highest revenue ($14,191,949) in the past 12 months, with 12,572 units sold — more than three times the number of orders (3,755).    
+✔️ Southwest had the highest number of orders from 2011 to 2014 but experienced a sharp decline in order quantity in 2014 (26,682 -> 11,632).   
+✔️ The number of pending orders (224), accounting for 10% of total orders, is acceptable. However, specific actions are needed to reduce this rate to 5–7%.   
+ 
 📌 Key Takeaways:  
-✔️  
-✔️   
-✔️ .  
+
+✔️ Focus on high-revenue bestsellers and balance inventory levels for each product.    
+✔️ Investigate the reasons behind the sharp decline in orders from Southwest, then propose solutions to address the issue.   
+✔️ Identify the main reasons for pending orders — whether due to system errors, internal issues, or external factors (e.g., unconfirmed orders or missing customer information). In addition, optimize production and logistics processes.   
