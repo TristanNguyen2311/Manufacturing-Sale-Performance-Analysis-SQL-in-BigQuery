@@ -3,7 +3,10 @@
 
 
 ---
-![Brown-Jersey-Ultimo-5-640x427](https://github.com/user-attachments/assets/b560b5c5-7f8d-4bd3-bdea-28e6720e0c90)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b560b5c5-7f8d-4bd3-bdea-28e6720e0c90" alt="Brown-Jersey-Ultimo" width="400">
+</p>
+
 
 
 
