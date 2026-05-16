@@ -13,7 +13,7 @@
 
 # 📊 Project Title: Manufacturing Sale Performance Analysis (SQL in BigQuery)   
 Author: Nguyễn Văn Trí   
-Date: 2024-10-19      
+  
 
 
 ---
