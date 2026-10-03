@@ -451,12 +451,15 @@ Query Result:
 
 👉🏻 Based on the insights and findings above, we would recommend the stakeholder team to consider the following:    
 
-✔️ Mountain Bikes had the highest revenue ($14,191,949) in the past 12 months, with 12,572 units sold — more than three times the number of orders (3,755).    
-✔️ Southwest had the highest number of orders from 2011 to 2014 but experienced a sharp decline in order quantity in 2014 (26,682 -> 11,632).   
-✔️ The number of pending orders (224), accounting for 10% of total orders, is acceptable. However, specific actions are needed to reduce this rate to 5–7%.   
+✔️ Mountain Bikes generated the highest revenue in the trailing 12 months ($14.19M, 12,572 units across 3,755 orders).       
+✔️ Mountain Frames grew 521% year-over-year (510 → 3,168 units) — the fastest-growing subcategory, far outpacing Road Frames (389%) and Socks (421%).   
+✔️ Territory 4 ranked #1 in order volume every year from 2012–2014, but dropped 56% in 2014 (26,682 → 11,632 orders) — a sharp reversal worth investigating.  
+✔️ Specific SKUs show severe overstock — "HL Mountain Frame - Black, 48" sold only 1 unit in December 2011 while holding 27 units in stock (27:1 ratio), indicating poor demand forecasting for slow-moving products.   
+✔️ 224 orders were in Pending status in 2014, representing $3.87M in unconfirmed order value.  
  
 📌 Key Takeaways:  
 
-✔️ Focus on high-revenue bestsellers and balance inventory levels for each product.    
-✔️ Investigate the reasons behind the sharp decline in orders from Southwest, then propose solutions to address the issue.   
-✔️ Identify the main reasons for pending orders — whether due to system errors, internal issues, or external factors (e.g., unconfirmed orders or missing customer information). In addition, optimize production and logistics processes.   
+✔️ Investigate what drove Mountain Frames 521% growth and apply the same demand/marketing drivers to other subcategories.   
+✔️ Audit slow-moving, high-stock-ratio SKUs like HL Mountain Frame variants for markdown or production-reduction — holding 27x unsold inventory ties up working capital.  
+✔️ Determine the root cause of Territory 4's 2014 decline (56% drop) before it affects overall regional performance.    
+✔️ Quantify what share of total 2014 orders the 224 pending orders ($3.87M) represent, then set a concrete reduction target backed by that number.
